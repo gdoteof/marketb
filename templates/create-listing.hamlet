@@ -1,0 +1,25 @@
+<div .masthead>
+    <div .container>
+        <div .row>
+            <h1 .header>
+                Create your listing
+<div .container>
+    <div .bs-docs-section>
+        <div .row>
+            <div .col-lg-6>
+                <div .bs-callout bs-callout-info well>
+                    <form .form-horizontal method=post action=@{CreateListingR}#forms enctype=#{formEnctype}>
+                        ^{formWidget}
+
+                        <button .btn.btn-primary type="submit">
+                            Upload it!
+
+
+            <div .col-lg-4.col-lg-offset-1>
+                <div .bs-callout.bs-callout-info.upload-response>
+
+                    $maybe (FileForm info con) <- submission
+                        Your file type is <em>#{fileContentType info}</em>. You say it has: <em>#{con}</em>
+
+                    $nothing
+                        File upload result will be here...

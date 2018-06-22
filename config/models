@@ -1,0 +1,39 @@
+-- By default this file is used by `persistFileWith` in Model.hs (which is imported by Foundation.hs)
+-- Syntax for this file here: https://github.com/yesodweb/persistent/blob/master/docs/Persistent-entity-syntax.md
+
+User
+    ident Text Maybe
+    email Text default='noset'
+    password Text Maybe -- Password may not be set yet
+    verkey Text Maybe -- Used for resetting passwords
+    verified Bool default=False
+    UniqueUser email
+    deriving Typeable
+
+Email
+    email Text
+    userId UserId Maybe
+    verkey Text Maybe
+    UniqueEmail email
+
+Comment json -- Adding "json" causes ToJSON and FromJSON instances to be derived.
+    message Text
+    userId UserId Maybe
+    deriving Eq
+    deriving Show
+
+--Photo json
+--    caption Text Maybe
+--    filename String
+--    date UTCTime
+--    userId UserId
+--    listingId ListingId
+--    UniquePhoto filename
+
+Listing json
+    userId UserId
+    name Text default='anonymous'
+--    photos [Photo] Maybe
+    price Double
+    createdAt UTCTime default=now()
+
