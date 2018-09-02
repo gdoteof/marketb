@@ -20,8 +20,6 @@ import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 
--- Used only when in "auth-dummy-login" setting is enabled.
-import Yesod.Auth.Dummy
 import Yesod.Auth.Email
 
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
@@ -176,18 +174,17 @@ instance Yesod App where
     authRoute _ = Just $ AuthR LoginR
 
     -- Routes not requiring authentication.
-    isAuthorized (AuthR _) _ = return Authorized
-    isAuthorized CommentR _ = return Authorized
-    isAuthorized HomeR _ = return Authorized
-    isAuthorized FaviconR _ = return Authorized
-    isAuthorized RobotsR _ = return Authorized
+    isAuthorized (AuthR _)   _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
+    isAuthorized CommentR    _ = return Authorized
+    isAuthorized HomeR       _ = return Authorized
+    isAuthorized FaviconR    _ = return Authorized
+    isAuthorized RobotsR     _ = return Authorized
+    isAuthorized (ReactR _)  _ = return Authorized
 
-    isAuthorized ProfileR _ = isAuthenticated
-
+    isAuthorized ProfileR _  = isAuthenticated
     isAuthorized ListingsR _ = isAuthenticated
     
-    isAuthorized (ReactR _) _ = return Authorized
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -251,9 +248,7 @@ instance YesodAuth App where
             Nothing -> return $ UserError InvalidLogin
 
     -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins app = [authOpenId Claimed [], authEmail] ++ extraAuthPlugins
-        -- Enable authDummy login if enabled.
-        where extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
+    authPlugins app = [authOpenId Claimed [], authEmail]
 
     getAuthId creds =
       runDB $
@@ -303,8 +298,10 @@ unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 instance YesodAuthEmail App where
   type AuthEmailId App = UserId
   afterPasswordRoute _ = HomeR
+
   addUnverified email verkey =
     runDB $ insert $ User Nothing email Nothing (Just verkey) False
+
   sendVerifyEmail email _ verurl
                           -- Print out to the console the verification email, for easier
                           -- debugging.
@@ -349,9 +346,13 @@ instance YesodAuthEmail App where
                 |]
         , partHeaders = []
         }
+  
   getVerifyKey = runDB . fmap (join . fmap userVerkey) . get
+
   needOldPassword _ = return False
+
   setVerifyKey uid key = runDB $ update uid [UserVerkey =. Just key]
+
   verifyAccount uid =
     runDB $
     do mu <- get uid
@@ -360,8 +361,10 @@ instance YesodAuthEmail App where
          Just u -> do
            update uid [UserVerified =. True]
            return $ Just uid
+
   getPassword = runDB . fmap (join . fmap userPassword) . get
   setPassword uid pass = runDB $ update uid [UserPassword =. Just pass]
+
   getEmailCreds email =
     runDB $
     do mu <- getBy $ UniqueUser email
