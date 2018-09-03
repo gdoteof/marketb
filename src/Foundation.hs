@@ -214,6 +214,9 @@ instance Yesod App where
 
     makeLogger = return . appLogger
 
+    maximumContentLength _ (Just ListingsR) = Just $ 200 * 1024 * 1024 -- 200 megabytes
+    maximumContentLength _ _ = Just $ 1 * 1024 * 1024 -- 1 megabyte
+
 -- Define breadcrumbs.
 instance YesodBreadcrumbs App where
   breadcrumb HomeR = return ("Home", Nothing)
