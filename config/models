@@ -22,18 +22,17 @@ Comment json -- Adding "json" causes ToJSON and FromJSON instances to be derived
     deriving Eq
     deriving Show
 
---Photo json
---    caption Text Maybe
---    filename String
---    date UTCTime
---    userId UserId
---    listingId ListingId
---    UniquePhoto filename
+Photo json
+    filename String
+    date UTCTime
+    userId UserId
+    listingId ListingId
+    UniquePhoto userId filename
 
 Listing json
     userId UserId
     name Text default='anonymous'
---    photos [Photo] Maybe
+    photos [Photo] Maybe
     price Double
     createdAt UTCTime default=now()
 

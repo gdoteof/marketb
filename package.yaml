@@ -50,6 +50,7 @@ dependencies:
 - foreign-store
 - mime-mail
 - blaze-html
+- base64-bytestring >= 1.0.0.0
 
 # The library contains all of our application code. The executable
 # defined below is just a thin wrapper.

@@ -9,11 +9,15 @@ import Import
 import qualified Database.Esqueleto as E
 import           Database.Esqueleto ((^.))
 
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Base64 as B64
+
 
 
 data ListingReq = ListingReq 
     { lqname     :: Text
     , lqprice    :: Double
+    , lqimages   :: [Text]
     } deriving Show
 
 
@@ -23,6 +27,7 @@ instance FromJSON ListingReq where
     parseJSON (Object o) = ListingReq
         <$> o .: "name"
         <*> o .: "price"
+        <*> o .: "images"
 
     parseJSON _ = mzero
 
@@ -60,7 +65,14 @@ postListingsR :: Handler Value
 postListingsR = do
     (userId, _) <- requireAuthPair
     listingReq <- requireJsonBody :: Handler ListingReq
-    liftIO $ putStrLn $ pack $ show $ listingReq
     now    <- liftIO $ getCurrentTime
-    newId  <- runDB $ insert $ Listing userId (lqname listingReq) (lqprice listingReq) now
+    images <- sequence $  map img2disk (lqimages listingReq)
+    newId  <- runDB $ insert $ Listing userId (lqname listingReq) (Just images) (lqprice listingReq) now
     return $ object ["newId" .= newId]
+    where
+        img2disk :: Text -> Handler Photo
+        img2disk s64 = do
+            let b64 = encodeUtf8 s64
+            ret <- liftIO $ B.writeFile ("./" ++ undefined) b64
+            return ret
+            undefined

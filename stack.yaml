@@ -42,6 +42,7 @@ packages:
 extra-deps: 
 - yesod-auth-hashdb-1.7
 - mime-mail-0.4.14
+- base64-bytestring-1.0.0.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
