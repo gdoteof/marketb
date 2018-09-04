@@ -12,7 +12,14 @@ import           Database.Esqueleto ((^.))
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Base64 as B64
 
+import qualified Data.ByteString.Char8 as C
 
+import Data.UUID.V4 as U4 (nextRandom)
+import Data.UUID as U (toText)
+
+import Data.Text (splitOn)
+
+import qualified Data.List as DL (head, last)
 
 data ListingReq = ListingReq 
     { lqname     :: Text
@@ -66,13 +73,25 @@ postListingsR = do
     (userId, _) <- requireAuthPair
     listingReq <- requireJsonBody :: Handler ListingReq
     now    <- liftIO $ getCurrentTime
-    images <- sequence $  map img2disk (lqimages listingReq)
-    newId  <- runDB $ insert $ Listing userId (lqname listingReq) (Just images) (lqprice listingReq) now
+    imagesOnDisk <- sequence $  map img2disk (lqimages listingReq)
+    newId  <- runDB $ insert $ Listing userId (lqname listingReq) (Just imagesOnDisk) (lqprice listingReq) now
     return $ object ["newId" .= newId]
     where
-        img2disk :: Text -> Handler Photo
+        img2disk :: Text -> Handler FilePath
         img2disk s64 = do
-            let b64 = encodeUtf8 s64
-            ret <- liftIO $ B.writeFile ("./" ++ undefined) b64
-            return ret
-            undefined
+            let extension =  DL.head $ splitOn ";" $ DL.last $ splitOn "/" $ DL.head $ splitOn "," s64
+            let dataPart  = C.pack $ unpack $ DL.last $ splitOn "," s64
+            let dataFile  = case B64.decode  dataPart of
+                                Left error -> B64.encode "error"
+                                Right bs -> bs
+            uuid <- liftIO $ getUUID
+            let newFileName = uuid ++ "." ++ extension
+            liftIO $ print newFileName
+            liftIO $ print $ take 30 $ unpack $ DL.last $ splitOn "," s64
+            ret <- liftIO $ B.writeFile ("./static/img/" ++ unpack newFileName) dataFile
+            return $ unpack newFileName
+            where
+                getUUID :: IO Text
+                getUUID = do
+                    seed <- U4.nextRandom
+                    return $ U.toText seed

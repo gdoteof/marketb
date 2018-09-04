@@ -32,7 +32,7 @@ Photo json
 Listing json
     userId UserId
     name Text default='anonymous'
-    photos [Photo] Maybe
+    photos [FilePath] Maybe
     price Double
     createdAt UTCTime default=now()
 
