@@ -78,19 +78,17 @@ postListingsR = do
     return $ object ["newId" .= newId]
     where
         img2disk :: Text -> Handler FilePath
-        img2disk s64 = do
-            let extension =  DL.head $ splitOn ";" $ DL.last $ splitOn "/" $ DL.head $ splitOn "," s64
-            let dataPart  = C.pack $ unpack $ DL.last $ splitOn "," s64
-            let dataFile  = case B64.decode  dataPart of
-                                Left error -> B64.encode "error"
+        img2disk b64string = do
+            let fileData  = case B64.decode  dataPart of
+                                Left error -> B64.encode "error" -- TODO
                                 Right bs -> bs
             uuid <- liftIO $ getUUID
-            let newFileName = uuid ++ "." ++ extension
-            liftIO $ print newFileName
-            liftIO $ print $ take 30 $ unpack $ DL.last $ splitOn "," s64
-            ret <- liftIO $ B.writeFile ("./static/img/" ++ unpack newFileName) dataFile
-            return $ unpack newFileName
+            let newFileName = unpack $ uuid ++ "." ++ extension
+            liftIO $ B.writeFile ("./static/img/" ++ newFileName) fileData
+            return  newFileName
             where
+                extension =  DL.head $ splitOn ";" $ DL.last $ splitOn "/" $ DL.head $ splitOn "," b64string
+                dataPart = C.pack $ unpack $ DL.last $ splitOn "," b64string
                 getUUID :: IO Text
                 getUUID = do
                     seed <- U4.nextRandom
