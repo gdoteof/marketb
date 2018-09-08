@@ -44,6 +44,7 @@ import Handler.Home
 import Handler.Comment
 import Handler.Profile
 import Handler.Listings
+import Handler.Listing
 import Handler.React
 
 -- This line actually creates our YesodDispatch instance. It is the second half

@@ -56,13 +56,15 @@ getListingsR = do
                 ,   listing ^. ListingPrice
                 ,   user    ^. UserIdent
                 ,   listing ^. ListingId
+                ,   listing ^. ListingPhotos
                 )
 
-    let cleanListings = map (\(n,p,u,id) -> object 
-                                [ "name"  .= (E.unValue n :: Text)
-                                , "price" .= (E.unValue p :: Double)
-                                , "user"  .= fromMaybe "Anonymous" (E.unValue u :: Maybe Text)
-                                , "key"   .= (E.unValue id)
+    let cleanListings = map (\(n,p,u,id,phts) -> object 
+                                [ "name"   .= (E.unValue n :: Text)
+                                , "price"  .= (E.unValue p :: Double)
+                                , "user"   .= fromMaybe "Anonymous" (E.unValue u :: Maybe Text)
+                                , "key"    .= (E.unValue id)
+                                , "photos" .= (E.unValue phts)
                                 ]) listings
 
     return $ object ["listings" .= cleanListings ]

@@ -16,4 +16,5 @@
 /profile ProfileR GET PUT
 
 /listings ListingsR GET POST
--- /listings/#ListingId ListingR GET PUT DELETE
+
+/listings/#ListingId ListingR GET
