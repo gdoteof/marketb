@@ -22,9 +22,13 @@ import Data.Text (splitOn)
 import qualified Data.List as DL (head, last)
 
 data ListingReq = ListingReq 
-    { lqname     :: Text
-    , lqprice    :: Double
-    , lqimages   :: [Text]
+    { lqname       :: Text
+    , lqprice      :: Double
+    , lqimages     :: [Text]
+    , lqbirthday   :: Maybe UTCTime
+    , lqshipping   :: Text  -- Shipping should be a struct?
+    , lqdesc       :: Text  
+    , lqage        :: Maybe Int
     } deriving Show
 
 
@@ -35,6 +39,10 @@ instance FromJSON ListingReq where
         <$> o .: "name"
         <*> o .: "price"
         <*> o .: "images"
+        <*> o .: "birthday"
+        <*> o .: "shipping"
+        <*> o .: "description"
+        <*> o .: "age"
 
     parseJSON _ = mzero
 
@@ -76,7 +84,7 @@ postListingsR = do
     listingReq <- requireJsonBody :: Handler ListingReq
     now    <- liftIO $ getCurrentTime
     imagesOnDisk <- sequence $  map img2disk (lqimages listingReq)
-    newId  <- runDB $ insert $ Listing userId (lqname listingReq) (Just imagesOnDisk) (lqprice listingReq) now
+    newId  <- runDB $ insert $ Listing userId (lqname listingReq) (Just imagesOnDisk) (lqprice listingReq) (lqage listingReq) (lqbirthday listingReq) (lqshipping listingReq) (lqdesc listingReq) now
     return $ object ["newId" .= newId]
     where
         img2disk :: Text -> Handler FilePath

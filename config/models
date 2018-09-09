@@ -34,5 +34,9 @@ Listing json
     name Text default='anonymous'
     photos [FilePath] Maybe
     price Double
+    age Int Maybe
+    birthday UTCTime Maybe 
+    shipping Text "default='Free Shipping'"
+    description Text "default='enter description'"
     createdAt UTCTime default=now()
 
