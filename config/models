@@ -38,5 +38,6 @@ Listing json
     birthday UTCTime Maybe 
     shipping Text "default='Free Shipping'"
     description Text "default='enter description'"
+    distillery Text "default='unknown distillery'"
     createdAt UTCTime default=now()
 

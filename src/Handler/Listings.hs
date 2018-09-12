@@ -6,6 +6,8 @@ module Handler.Listings where
 
 import Import
 
+import Data.Time
+
 import qualified Database.Esqueleto as E
 import           Database.Esqueleto ((^.))
 
@@ -25,9 +27,10 @@ data ListingReq = ListingReq
     { lqname       :: Text
     , lqprice      :: Double
     , lqimages     :: [Text]
-    , lqbirthday   :: Maybe UTCTime
+    , lqbirthday   :: Maybe Text
     , lqshipping   :: Text  -- Shipping should be a struct?
     , lqdesc       :: Text  
+    , lqdistillery :: Text  
     , lqage        :: Maybe Int
     } deriving Show
 
@@ -42,6 +45,7 @@ instance FromJSON ListingReq where
         <*> o .: "birthday"
         <*> o .: "shipping"
         <*> o .: "description"
+        <*> o .: "distillery"
         <*> o .: "age"
 
     parseJSON _ = mzero
@@ -78,13 +82,19 @@ getListingsR = do
     return $ object ["listings" .= cleanListings ]
 
 
+parseDate' :: String -> Day
+parseDate' s = readTime defaultTimeLocale "%Y-%m-%d" s
+
 postListingsR :: Handler Value
 postListingsR = do
     (userId, _) <- requireAuthPair
     listingReq <- requireJsonBody :: Handler ListingReq
     now    <- liftIO $ getCurrentTime
     imagesOnDisk <- sequence $  map img2disk (lqimages listingReq)
-    newId  <- runDB $ insert $ Listing userId (lqname listingReq) (Just imagesOnDisk) (lqprice listingReq) (lqage listingReq) (lqbirthday listingReq) (lqshipping listingReq) (lqdesc listingReq) now
+    let birthdate = case (lqbirthday listingReq) of
+                        Just d  -> Just $ UTCTime (parseDate' (unpack d)) 0
+                        Nothing -> Nothing
+    newId  <- runDB $ insert $ Listing userId (lqname listingReq) (Just imagesOnDisk) (lqprice listingReq) (lqage listingReq) birthdate (lqshipping listingReq) (lqdesc listingReq) (lqdistillery listingReq) now
     return $ object ["newId" .= newId]
     where
         img2disk :: Text -> Handler FilePath
